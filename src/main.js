@@ -3,15 +3,18 @@ import ticks from "./data/ticks.js";
 import process from "./ml/process.js";
 import dataset from "./ml/dataset.js";
 import model from "./ml/model.js";
-import info from "./info.js";
+import info from "./utils/info.js";
 import log from "@fraserdarwent/javascript-logger";
-
+import v8 from "v8";
 log.info("Starting finbot-v2");
+log.info(
+  `Memory limit of ${Math.round(
+    v8.getHeapStatistics().heap_size_limit / 1000000
+  )}MB`
+);
 symbols()
-  .then((symbols) => symbols.slice(0, 1))
   .then((symbols) => ticks(symbols))
-  .then((symbols) => symbols.filter((symbol) => 0 < symbol.ticks.length))
-  .then((symbols) => info(symbols))
-  .then((symbols) => process(symbols))
-  .then((data) => dataset(data))
+  .then(info)
+  .then(process)
+  .then(dataset)
   .then((dataset) => model.fitDataset(dataset, { epochs: 1 }));

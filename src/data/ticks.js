@@ -1,20 +1,44 @@
 import log from "@fraserdarwent/javascript-logger";
 import xapi from "./xapi.js";
+import cliProgress from "cli-progress";
+import fs from "fs";
+import JSONStream from "JSONStream";
+import StreamArray from "stream-json/streamers/StreamArray";
+import mkdirp from "mkdirp";
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+let completed = 0;
+
+const cacheDir = `.cache/${new Date().toISOString().slice(0, 10)}/raw`;
 
 export default function ticks(symbols) {
-  return Promise.all(
-    symbols.map((symbol, index) =>
-      delay(index * 1000).then(() =>
-        xapi.ticks(symbol).then((ticks) => {
-          return { symbol: symbol, ticks: ticks };
-        })
-      )
-    )
-  ).catch((error) => {
-    log.fatal(error);
-  });
+  if (fs.existsSync(cacheDir)) {
+    return symbols;
+  }
+
+  const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+
+  log.info("Fetching ticks for symbols");
+  bar.start(symbols.length, 0);
+  return xapi
+    .ticks(symbols, () => {
+      bar.update((completed = completed + 1));
+    })
+    .then((ticks) => {
+      bar.stop();
+      cache(ticks);
+      return symbols;
+    });
+}
+
+function cache(ticks) {
+  log.info("Caching ticks");
+  mkdirp(cacheDir).then((_) =>
+    ticks.map((tick) => {
+      const fileName = `${cacheDir}/${
+        tick.symbol
+      }-${new Date().toISOString().slice(0, 10)}.json`;
+      fs.writeFileSync(fileName, JSON.stringify(tick.ticks));
+      return fileName;
+    })
+  );
 }

@@ -1,10 +1,9 @@
-import commonjs from "@rollup/plugin-commonjs";
-
+import commonJS from "@rollup/plugin-commonjs";
 export default {
   input: "src/main.js",
   output: {
-    file: "dist/bundle.js",
+    file: "dist/main.js",
     format: "cjs",
   },
-  plugins: [commonjs()],
+  plugins: [commonJS()],
 };

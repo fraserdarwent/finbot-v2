@@ -21,14 +21,62 @@ model.add(
   })
 );
 
+// model.add(tf.layers.flatten());
+
+// model.add(
+//   tf.layers.dense({
+//     units: 60,
+//     activation: "linear",
+//     useBias: true,
+//   })
+// );
+
+// model.add(
+//   tf.layers.dense({
+//     units: 30,
+//     activation: "linear",
+//     useBias: true,
+//   })
+// );
+
+// model.add(
+//   tf.layers.dense({
+//     units: 1,
+//     activation: "linear",
+//     useBias: true,
+//   })
+// );
+
 model.add(tf.layers.flatten());
+
+model.add(
+  tf.layers.dense({
+    units: 75,
+    activation: "linear",
+  })
+);
+
+model.add(
+  tf.layers.dense({
+    units: 75,
+    activation: "sigmoid",
+  })
+);
 
 model.add(
   tf.layers.dense({
     units: 1,
     activation: "linear",
-    useBias: true,
   })
 );
+
+model.compile({
+  loss: tf.losses.meanSquaredError,
+  optimizer: tf.train.adam(0.0001),
+  metrics: ["accuracy"],
+});
+
+export { model };
+
 compileModel(model);
 export default model;
